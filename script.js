@@ -1,41 +1,57 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Select DOM elements
     const addButton = document.getElementById('add-task-btn');
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
+    const todoApp = document.getElementById('todo-app');
+
+    function showErrorMessage(message) {
+        const existingError = document.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        const errorDiv = document.createElement('div');
+        errorDiv.classList.add('error-message');
+        errorDiv.textContent = message;
+        
+        todoApp.insertBefore(errorDiv, taskList);
+
+        setTimeout(() => {
+            errorDiv.classList.add('fade-out');
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 300);
+        }, 3000);
+    }
 
     function createTaskElement(taskText) {
-        // Create list item with task text
         const listItem = document.createElement('li');
-        const taskSpan = document.createElement('span');
-        taskSpan.textContent = taskText;
-        taskSpan.classList.add('task-text');
-        listItem.appendChild(taskSpan);
+        listItem.classList.add('task-item');
 
-        // Create remove button with appropriate styling
+        const taskContent = document.createElement('span');
+        taskContent.classList.add('task-content');
+        taskContent.textContent = taskText;
+
         const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove';
         removeButton.classList.add('remove-btn');
-        
-        // Add button container for proper spacing
-        const buttonContainer = document.createElement('div');
-        buttonContainer.classList.add('button-container');
-        buttonContainer.appendChild(removeButton);
-        
-        // Add interaction handlers
-        removeButton.onclick = function() {
+        removeButton.textContent = 'Remove';
+
+        removeButton.addEventListener('click', () => {
             listItem.classList.add('fade-out');
             setTimeout(() => {
-                taskList.removeChild(listItem);
+                listItem.remove();
+                if (taskList.children.length === 0) {
+                    const emptyMessage = document.createElement('li');
+                    emptyMessage.classList.add('empty-message');
+                    emptyMessage.textContent = 'No tasks yet. Add a new task above.';
+                    taskList.appendChild(emptyMessage);
+                }
             }, 300);
-        };
+        });
 
-        // Add hover effect class
-        listItem.classList.add('task-item');
-        
-        // Assemble the task item
-        listItem.appendChild(buttonContainer);
-        
+        listItem.appendChild(taskContent);
+        listItem.appendChild(removeButton);
+
         return listItem;
     }
 
@@ -43,30 +59,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskText = taskInput.value.trim();
         
         if (taskText === '') {
-            const inputElement = taskInput.parentElement;
-            inputElement.classList.add('input-error');
-            taskInput.placeholder = 'Please enter a task';
-            
+            showErrorMessage('Please enter a task description');
+            taskInput.classList.add('input-error');
             setTimeout(() => {
-                inputElement.classList.remove('input-error');
-                taskInput.placeholder = 'Enter a new task';
-            }, 2000);
+                taskInput.classList.remove('input-error');
+            }, 1000);
             return;
         }
 
-        // Create and add the new task
+        const emptyMessage = document.querySelector('.empty-message');
+        if (emptyMessage) {
+            emptyMessage.remove();
+        }
+
         const listItem = createTaskElement(taskText);
         taskList.appendChild(listItem);
-
-        // Add entrance animation class
         listItem.classList.add('fade-in');
-        
-        // Reset input field
+
         taskInput.value = '';
         taskInput.focus();
+
+        const successMessage = document.createElement('div');
+        successMessage.classList.add('success-message');
+        successMessage.textContent = 'Task added successfully';
+        todoApp.insertBefore(successMessage, taskList);
+
+        setTimeout(() => {
+            successMessage.classList.add('fade-out');
+            setTimeout(() => {
+                successMessage.remove();
+            }, 300);
+        }, 2000);
     }
 
-    // Event Listeners
     addButton.addEventListener('click', addTask);
 
     taskInput.addEventListener('keypress', (event) => {
@@ -75,12 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Remove error styling when user starts typing
-    taskInput.addEventListener('input', () => {
-        const inputElement = taskInput.parentElement;
-        if (inputElement.classList.contains('input-error')) {
-            inputElement.classList.remove('input-error');
-            taskInput.placeholder = 'Enter a new task';
-        }
-    });
+    const emptyMessage = document.createElement('li');
+    emptyMessage.classList.add('empty-message');
+    emptyMessage.textContent = 'No tasks yet. Add a new task above.';
+    taskList.appendChild(emptyMessage);
 });
